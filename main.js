@@ -1,10 +1,30 @@
 var c = document.getElementById("myCanvas");
 var ctx = c.getContext("2d");
-var x = 0
-var y = 0
+var points = [];
+var lastPoint = { x:0, y:0 };
+
+function Point(x, y, pointSize, r, g, b, a){
+    this.x = x;
+    this.y = y;
+    this.pointSize = pointSize;
+    this.scaled_x = mapRange(-2.1820, 2.6558, 0, c.width, x);
+    this.scaled_y = mapRange(0, 9.9983, 0, c.height, y);
+    this.pointColor = { r: r, g: g, b: b, a: a}
+}
+
+function Color(r, g, b, a){
+    this.r = r;
+    this.g = g;
+    this.b = b;
+    this.a = a;
+}
+
+function mapRange(a, b, c, d, x){
+    return ((x - a) * ((d - c) / (b - a)) + c);
+}
 
 function setup(){
-    ctx.canvas.width = window.innerWidth;
+    ctx.canvas.width = window.innerHeight;
     ctx.canvas.height = window.innerHeight;
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, c.width, c.height);
@@ -14,50 +34,46 @@ function setup(){
 }
 
 function draw(){
-    var points = [];
-    for (let i = 0; i < 1000; i++){
-        points.push({x, y})
-        next_point()
+    points = [];
+    for (let i = 0; i < 20000; i++) {
+        next_point();
     }
-    for (var p of points){
-        map_point(p.x, p.y);
+    for (let p of points){
+        drawPoint(p);
     }
     window.requestAnimationFrame(draw);
 }
 
-function map_point(x, y){
-    var scaled_x = (x + 2.1820) * (c.width / (2.6558 + 2.1820))
-    var scaled_y = y * (c.height / 9.9983)
-    point(scaled_x, scaled_y, 1, 255, 255, 255, 1)
-}
 
 function next_point(){
     var r = Math.random();
-    var next_x;
-    var next_y;
+    var x;
+    var y;
     if (r < 0.01){
-        next_x = 0;
-        next_y = 0.16 * y;
+        x = 0;
+        y = 0.16 * lastPoint.y;
     } else if (r < 0.86){
-        next_x = 0.85 * x + 0.04 * y;
-        next_y = -0.04 * x + 0.85 * y + 1.6;
+        x = 0.85 * lastPoint.x + 0.04 * lastPoint.y;
+        y = -0.04 * lastPoint.x + 0.85 * lastPoint.y + 1.6;
     } else if (r < 0.93){
-        next_x = 0.2 * x - 0.26 * y;
-        next_y = 0.23 * x + 0.22 * y + 1.6;
+        x = 0.2 * lastPoint.x - 0.26 * lastPoint.y;
+        y = 0.23 * lastPoint.x + 0.22 * lastPoint.y + 1.6;
     } else{
-        next_x = -0.15 * x + 0.28 * y;
-        next_y = 0.26 * x + 0.24 * y + 0.44;
+        x = -0.15 * lastPoint.x + 0.28 * lastPoint.y;
+        y = 0.26 * lastPoint.x + 0.24 * lastPoint.y + 0.44;
     }
-    x = next_x;
-    y = next_y;
+    lastPoint.x = x;
+    lastPoint.y = y;
+    var r = 225;
+    var g = mapRange(0, 9.9983, 35, 225, y);
+    var b = 105;
+    var a = 0.5;
+    points.push(new Point(x, y, 0.1, r, g, b, a));
 }
 
-function point(p_x, p_y, pSize, r, g, b, a){
-    ctx.beginPath();
-    ctx.arc(p_x, p_y, pSize, 0, 2 * Math.PI);
-    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
-    ctx.fill();
-    ctx.closePath();
+function drawPoint(p){
+    ctx.fillStyle = `rgba(${p.pointColor.r}, ${p.pointColor.g}, ${p.pointColor.b}, ${p.pointColor.a})`;
+    ctx.fillRect(p.scaled_x, p.scaled_y, p.pointSize, p.pointSize);
 }
 
 setup();
